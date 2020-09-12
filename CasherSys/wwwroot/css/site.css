@@ -1,0 +1,12 @@
+﻿html{
+    direction:rtl;
+}
+/*.content-wrapper{
+    background-color:white;
+}
+.footer {
+    background-color: white;
+}*/
+.input-validation-error{
+    border:1px solid red !important;
+}

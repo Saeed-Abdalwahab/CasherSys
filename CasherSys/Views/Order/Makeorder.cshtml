@@ -1,0 +1,497 @@
+﻿@model OrderVM
+
+@{
+    ViewData["Title"] = "Makeorder";
+}
+
+
+@section Styles
+{
+    <style>
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #ffffff !important;
+            opacity: 1;
+        }
+
+        .NoBackground {
+            background: none;
+            border: none;
+        }
+
+        .InputNotValid {
+            border: 1px solid red;
+        }
+
+            .InputNotValid:focus {
+                border-color: #FF0000;
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 0, 0, 0.6);
+            }
+
+
+        th {
+            text-align: center
+        }
+
+        td .form-control {
+            width: 7rem;
+        }
+    </style>
+}
+
+<div class="col-md-12 grid-margin">
+    <div class="card">
+        <div class="card-body">
+
+            <form class="forms-sample">
+                <div class="form-group row">
+                    <div class="col-md-4 col-sm-12 row">
+
+                        <label asp-for="@Model.OrderNumber" class="col-sm-3 col-form-label"></label>
+
+                        <div class="col-sm-9">
+                            <input class="form-control"readonly asp-for="@Model.OrderNumber">
+                            <span class="text-danger" asp-validation-for="OrderNumber"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-12 row">
+                        <label asp-for="@Model.Date" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <span class="text-danger" asp-validation-for="Date"></span>
+                            <input class="form-control"  asp-for="@Model.Date">
+
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-12 row">
+                        <label asp-for="@Model.TotalCoast" class="col-sm-3 col-form-label"></label>
+                        <div class="col-sm-9">
+                            <span class="text-danger" asp-validation-for="Date"></span>
+                            <input class="form-control" readonly asp-for="@Model.TotalCoast">
+
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+            <div class="text-left">
+                <button class="btn btn-light btn-rounded btn-fw" id="AddNewItem" onclick="ToggleMagicRow()">إضافه صنف</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="">
+                        <tr>
+                            <th class="d-none"></th>
+                            <th>#</th>
+                            <th>الفئة</th>
+                            <th>الصنف</th>
+                            <th>الحجم&السعر</th>
+                            <th>العدد</th>
+                            <th>ملاحظات</th>
+                            <th>التكلفه</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts
+{
+    <script>
+        function GetAllCategorieslist() {
+            
+                $.ajax({
+                    url: "/ItemCategory/GetallCategories",
+                    type: "get",
+                    success: function (data) {
+                        $("#CategoriesList").empty().append('<option value="">اختر الفئة</option>');
+                        $.each(data, function (index, value) {
+                            var newOption = "<option value=" + value.id + ">" + value.name + "</option>";
+                            $("#CategoriesList").append(newOption);
+                        });
+                    }
+                });
+
+        
+        }
+        function GetAllItemsList() {
+
+                $.ajax({
+                    url: "/Item/GetallItems",
+                    type: "get",
+                    success: function (data) {
+                        $.each(data, function (index, value) {
+
+                            var newOption = "<option value=" + value.id + ">" + value.name + "</option>";
+                            $("#ItemsList").append(newOption);
+                        });
+                    }
+                });
+
+        }
+        function GetAllItemsListByCategoryid(id) {
+
+            $.ajax({
+                url: "/Item/GetallItemsByCategoryID?id="+id,
+                type: "get",
+                success: function (data) {
+
+                    $("#ItemsList").empty().append('<option value="">اختر الصنف</option>');
+                    $.each(data, function (index, value) {
+                        var newOption = "<option value=" + value.id + ">" + value.name + "</option>";
+                        $("#ItemsList").append(newOption);
+                    });
+                }
+            });
+        }
+        function SelectCategoryID(id) {
+            if (id == "") {
+                $("#CategoriesList").val("");
+
+            }
+            else {
+                $.ajax({
+                    url: "/Item/CategoryID?id=" + id,
+                    type: "get",
+                    success: function (data) {
+                        $("#CategoriesList").val(data);
+                    }
+                });
+            }
+        }
+        function GetItemSizes(id) {
+
+            $.ajax({
+                url: "/Item/ItemSizes?id=" + id,
+                type: "get",
+                success: function (data) {
+
+                    $("#ItemDetailsList").empty();
+                    $.each(data, function (index, value) {
+                        var newOption = "<option value=" + value.key + ">" + value.value + "</option>";
+                        $("#ItemDetailsList").append(newOption);
+                    });
+                    GetItemPrice(data[0].key);
+                    $("#ItemDetailsList option").first().attr("selected", "selected");
+                }
+            });
+        }
+        function GetItemPrice(ItemDetailsid) {
+            $.ajax({
+                url: "/Item/GetItemPrice?ItemDetailsID=" + ItemDetailsid,
+                type: "get",
+                success: function (data) {
+
+                    $("#SelectedItemPrice").val(data);
+                    var ItemCount = $("#ItemCount").val();
+                    var totalCost = ItemCount * data;
+                    totalCost > 0 ? $("#ItemTotal").val(totalCost) : $("#ItemTotal").val(0);
+                }
+            });
+
+        }
+        var ItemsList = [];
+
+            var MagicRow = `
+    <tr id="MagicRow" >
+            <td  scope="row"> </td>
+            <td  class="d-none"><input type="text" id="SelectedItemPrice" /></td>
+
+                        <td><select class="form-control" id="CategoriesList"><option value="">اختر الفئة</option></select></td>
+                        <td><select class="form-control" id="ItemsList"><option value="">اختر الصنف</option></select></td>
+                        <td><select class="form-control" id="ItemDetailsList"></select>  </td>
+                        <td>
+                            <input class="form-control" type="number" placeholder="العدد" id="ItemCount"  />
+                        </td>
+                        <td>
+                            <input class="form-control" type="text"  placeholder="ملاحظات"  id="ItemNotes" />
+                        </td>
+                        <td>
+                            <input class="form-control" id="ItemTotal" readonly />
+                        </td>
+    <td>
+     <button class="d-inline-block NoBackground" id="ConfirmAddNewRow"><i class="fa fa-check"></i></button>
+           <button class="d-inline-block NoBackground" id="ConfirmCancelNewRow"><i class="fa fa-times"></i></button>
+                        </td>
+                    </tr>`;
+        //CheckValidation Befor AddNew OrderRowDetails
+        function CheckAddNewRowValidation() {
+            
+            $(".InputNotValid").removeClass("InputNotValid");
+            var Flag = true;
+            var InputCategoryID = $("#CategoriesList");
+            var InputItemID = $("#ItemsList");
+            var InputSizeID = $('#ItemDetailsList');
+            var InputCount = $('#ItemCount');
+
+            if (InputCategoryID.val() == "") {
+                InputCategoryID.addClass("InputNotValid");
+                InputCategoryID.focus();
+                Flag = false;
+
+
+            }
+          else  if (InputItemID.val() == "") {
+                InputItemID.addClass("InputNotValid");
+                InputItemID.focus();
+                 Flag = false;
+
+            }
+            else if (InputSizeID.val() == "") {
+                InputSizeID.addClass("InputNotValid");
+                InputSizeID.focus();
+                 Flag = false;
+
+            }
+            else if (InputCount.val() <= 0) {
+                InputCount.addClass("InputNotValid");
+                InputCount.focus();
+                 Flag = false;
+
+            }
+
+            return Flag;
+        }
+
+        // Add And Remove MagicRow
+        function ToggleMagicRow() {
+            if ($("#MagicRow").length || $("#MagicRowEdit").length) {
+                return false;
+            }
+            $("thead").append(MagicRow);
+        }
+        //Fill New Item To Our Invoice Details List
+            function PushNewitem() {
+                if (CheckAddNewRowValidation()) {
+                    var LastRow = $("tbody").children().length + 1;
+                    let RowID = ItemsList.length + 1;
+                    var OrderRowDetails = {
+                        ID:0,
+                        RowID: RowID,
+                        CategoryID: parseInt($("#CategoriesList").val()),
+                        ItemID: parseInt($("#ItemsList").val()),
+                        ItemDetailsID: parseFloat($("#ItemDetailsList").val()),
+                        ItemCount: parseFloat($("#ItemCount").val()),
+                        ItemNotes: parseFloat($("#ItemNotes").val()),
+                        ItemTotal: parseFloat($("#ItemTotal").val())
+                    }
+                    ItemsList.push(OrderRowDetails);
+                    var CategoryName = $("#CategoriesList option:selected").text();
+                    var ItemName = $("#ItemsList option:selected").text();
+                    var ItemDetails = $("#ItemDetailsList option:selected").text();
+                    var ItemPrice = $("#SelectedItemPrice").val();
+                    var ItemTotalCost = ItemPrice * OrderRowDetails.ItemCount;
+                    AddNewRow(RowID, LastRow, CategoryName, ItemName, ItemDetails, OrderRowDetails.ItemCount, OrderRowDetails.ItemNotes, OrderRowDetails.ItemTotal);
+                    $("#MagicRow").remove();
+                    ToggleMagicRow();
+                    toastr.success( "تم اضافه الصنف", "Notification", { timeOut: 3000 });
+
+                }
+                else {
+                    toastr.error("Please Make Shur Yo Fill All Required Fildes!", "Notification", { timeOut: 3000 });
+
+                }
+        }
+   
+        //Add New Row
+        function AddNewRow(RowID, index, CategoryName, ItemName, ItemDetailsName, ItemCount, ItemNotes, ItemTotal) {
+
+            var NewRow = ` <tr id="RowNo_${index}">
+            <th  scope="row">${index}</th>
+                        <td name="item">${CategoryName}</td>
+                        <td name="unit">${ItemName}</td>
+                        <td name="price">${ItemDetailsName}</td>
+                        <td name="Quantity">${ItemCount}</td>
+                        <td name="Total">${ItemNotes}</td>
+                        <td name="Discount">${ItemTotal}</td>
+                       <td><button class="btn d-inline-block text-danger  NoBackground" onClick="DeletRow(${RowID},${index})"><i class="fa fa-trash"></i></button>
+                            <button class="btn d-inline-block  text-primary NoBackground" onClick="EditRow(${RowID},${index})"><i class="fa fa-edit"></i></i></button>
+                        </td>
+                    </tr>`;
+            $("tbody").append(NewRow);
+        }
+        //Delete Row
+        function DeletRow(_RowID, RowIndex) {
+            $("#RowNo_" + RowIndex).remove();
+            ItemsList = ItemsList.filter(x => x.RowID != _RowID);
+            $("#MagicRow").remove();
+            $("#MagicRowEdit").remove();
+            ResetTableIndex();
+       
+
+
+        }
+        //To Enable Edit In Selected Row
+        function EditRow(_RowID, index) {
+            if ($("#MagicRow").length || $("#MagicRowEdit").length) {
+                return false;
+            }
+
+            var EditedOrderRowDetails = ItemsList.filter(x => x.RowID == _RowID)[0];
+             var MagicRowEdit = `
+    <tr id="MagicRowEdit">
+            <td>
+
+                        </td>
+                        <td><select class="form-control" id="CategoriesList"><option value="">اختر الفئة</option></select></td>
+                        <td><select class="form-control" id="ItemsList"><option value="">اختر الصنف</option></select></td>
+                        <td>
+                            <input class="form-control" type="text" placeholder="Price"  value="${EditedOrderRowDetails.Price}" id="ItemPrice" name="ItemPrice" />
+
+                        </td>
+                        <td>
+                            <input class="form-control" type="text"  value="${EditedOrderRowDetails.Quantity}" placeholder="Quantity"  id="ItemQuantity" />
+                        </td>
+                        <td>
+
+                            <input class="form-control" value="${EditedOrderRowDetails.Total}" id="ItemTotal" readonly />
+                        </td>
+
+
+    <td>
+                            <button class="d-inline-block NoBackground" onClick="EditItemOrderRowDetails(${_RowID},${index})"><i class="fa fa-check"></i></button>
+                            <button class="d-inline-block NoBackground" id="ConfirmCancelNewRow"><i class="fa fa-times"></i></button>
+
+                        </td>
+                    </tr>
+    `;
+            $("thead").append(MagicRowEdit);
+            $("#itemID").val(EditedOrderRowDetails.ItemID);
+            $("#UnitID").val(EditedOrderRowDetails.UnitID);
+
+        }
+        //Functon To Submitt Edit In Row
+        function EditItemOrderRowDetails(RowID, RowIndex) {
+            if (CheckAddNewRowValidation()) {
+                PushNewitem();
+                DeletRow(RowID, RowIndex);
+                ResetTableIndex();
+                UpdateTotalNet();
+
+            }
+            else {
+                toastr.error("Please Make Shur Yo Fill All Required Fildes!", "Notification", { timeOut: 3000 });
+            }
+        }
+        // Handel Order OF Rows When Delete Row
+        function ResetTableIndex() {
+
+            var AllFristTD = $("tbody").find('tr > td:first-child');
+            $.each(AllFristTD, function (index, item) {
+                item.innerHTML = index + 1;
+            });
+        }
+        $(document).ready(function () {
+            //CreatDropDownlist Num1
+            GetAllCategorieslist();
+            GetAllItemsList();
+            var EmptyMagicRow = MagicRow;
+            $("thead").append(MagicRow);
+
+            //onselect Category
+            $(document).on('change', '#CategoriesList', function () {
+                var CategoryID = $(this).val();
+                $("#ItemDetailsList").empty();
+                CategoryID == "" ? GetAllItemsList(): GetAllItemsListByCategoryid(CategoryID);
+            });
+            $(document).on('change', '#ItemsList', function () {
+                debugger
+                $("#ItemDetailsList").empty();
+                var ItemID = $(this).val();
+                SelectCategoryID(ItemID);
+                if (ItemID != "") {
+                    GetItemSizes(ItemID);
+
+                }
+            });
+            $(document).on('change', '#ItemDetailsList', function () {
+
+                GetItemPrice($("#ItemsList").val(),$(this).val());
+            });
+
+
+            $(document).on('click', '#ConfirmCancelNewRow', function () {
+                $("#MagicRow").remove();
+                $("#MagicRowEdit").remove();
+            });
+            $(document).on('keyup', '#ItemPrice', function () {
+                Calculate_NEt_Total();
+                $(this).removeClass("InputNotValid");
+
+            });
+            $(document).on('keyup', '#ItemQuantity', function () {
+                Calculate_NEt_Total();
+                $(this).removeClass("InputNotValid");
+
+            });
+            $(document).on('keyup', '#ItemDiscount', function () {
+                Calculate_NEt_Total();
+                $(this).removeClass("InputNotValid");
+
+            });
+            $(document).on('change', '#itemID', function () {
+                $(this).removeClass("InputNotValid");
+
+            });
+            $(document).on('change', '#UnitID', function () {
+                $(this).removeClass("InputNotValid");
+            });
+            $(document).on('keyup', '#ItemCount', function () {
+                var ItemPrice = $("#SelectedItemPrice").val();
+                var TotalItemCost = ItemPrice * parseInt($(this).val());
+                TotalItemCost > 0 ? $("#ItemTotal").val(TotalItemCost) : $("#ItemTotal").val(0);
+            });
+            $(document).on('click', '#ConfirmAddNewRow', function () {
+
+                PushNewitem();
+                ResetTableIndex();
+            });
+            $("#Submitbtn").click(function (e) {
+                e.preventDefault();
+                if ($("#InvoiceForm").valid()) {
+                    if (ItemsList.length > 0) {
+                        let list = { 'OrderRowDetailsVMs': ItemsList }
+
+                        var datatosent = $("#InvoiceForm").serialize() + "&" + $.param(list);
+
+                        $.ajax({
+                            url: "@Url.Action("Create", "Invoice")",
+                            type: "post",
+                            data: datatosent,
+                            success: function (Data) {
+                                if (Data.Status == true) {
+
+                                    toastr.success("INvoice Added Successfully", "Notification", { timeOut: 1000 });
+                                    window.location.href = '@Url.Action("index", "Invoice")';
+                                }
+                                else {
+                                    toastr.error("Invoice Not Saved Try Again", "Notification", { timeOut: 1000 });
+                                }
+
+                            },
+                            error: function () {
+                                toastr.error("Somthing Goes Wrong!", "Notification", { timeOut: 1000 });
+
+                            }
+                        });
+                    }
+                    else {
+                        toastr.error("Please Add At least One Item To invoice!", "Notification", { timeOut: 1000 });
+                        return false;
+
+                    }
+                }
+                else {
+                    return false;
+                }
+            });
+        })
+    </script>
+}
+
