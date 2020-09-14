@@ -36,7 +36,8 @@ namespace Services
             return repository.GetAll().Select(x => new JsTreeModel
             {
                 text = x.Name,
-
+                icon= "fa fa - list - ul",
+                state=new JsTreeModelstate() { opened=true,disabled=true},
                 children = x.items.Select(xx => new JsTreeModel
                 {
                     id = xx.ID.ToString(),

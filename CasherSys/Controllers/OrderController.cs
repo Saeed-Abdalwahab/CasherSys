@@ -29,33 +29,35 @@ namespace CasherSys.Controllers
             itemRepo = ItemRepo;
             this.loaftypeRepo = loaftypeRepo;
         }
-        public IActionResult Makeorder()
-        {
-            return View(service.GetOrderCreate());
-        }
-        public IActionResult Invoice()
-        {
-            ViewBag.AllCategories = service.GetAllItemCategories((IRepository<itemCategory>)typeof(IRepository<itemCategory>));
-            return View();
-
-        }
+       
         public IActionResult Index()
         {
-            return View();
+
+            return View(service.GetOrderCreate());
         }
         public IActionResult GetItemsTree()
         {
             return Json(ItemCategoryService.GetItemsTreeitem());
         }
+
         [HttpPost]
-        
-        public IActionResult ItemDetailsRow(List<int> ids)
+        public IActionResult ItemDetailsRow(int id)
         {
             ViewBag.LoafTypes = loaftypeRepo.GetAll().ToList();
 
-            var ItemVm = itemRepo.Find(x => ids.Contains(x.ID)).ToList();
+            var Item= itemRepo.Get(id);
             
-            return PartialView(ItemVm);
+            return PartialView(Item);
+        }
+        [HttpPost]
+        public IActionResult SaveOrder(OrderVM orderVM)
+        {
+          var s=  service.SaveOrderInDb(orderVM);
+            return null;
+        }
+        public void PrintOrderReport(int OrderID)
+        {
+
         }
     }
 }

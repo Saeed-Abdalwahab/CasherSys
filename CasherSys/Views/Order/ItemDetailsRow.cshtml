@@ -1,28 +1,25 @@
-﻿@model List<DAL.Item>
-@{ 
-    System.Text.StringBuilder Customoptions= new System.Text.StringBuilder();
-    //Microsoft.AspNetCore.Html.HtmlString htmlString = new Microsoft.AspNetCore.Html.HtmlString()
-}
-@foreach (var item in (List<DAL.LoafType>)ViewBag.LoafTypes)
-{
-    Customoptions.Append($"<option value='{item.ID}' PlusCost='{item.plusCost}'>{item.Name}</option>");
-}
-@foreach (var item in Model)
-{
-    <tr id="@item.ID">
+﻿@model DAL.Item
+
+
+    <tr id="@Model.ID">
         <td></td>
-        <td>@item.Name</td>
+        <td>@Model.Name</td>
     <td class="TdDropDownListForLoaf">
-        <select class="form-control input-sm">
-            @Html.Raw(Customoptions.ToString())
+        <select name="orderDetailsVMs[].LoafTypeID" form="OrderForm" class="form-control input-sm">
+            @foreach (var item in (List<DAL.LoafType>)ViewBag.LoafTypes)
+            {
+         <option value="@item.ID" PlusCost="@item.plusCost">@item.Name</option>
+            }
         </select>
+        
     </td>
         <td class="TdDropDownListForPrice">
-            @Html.DropDownList("Drop", new SelectList(item.ItemDetails, "ID", "Price"),null,new { @class= "form-control input-sm ",id="" })
-           
+            @Html.DropDownList("orderDetailsVMs[].itemDetailsID", new SelectList(Model.ItemDetails, "ID", "Price"),null,new { @class= "form-control input-sm ",id="", form = "OrderForm" })
         </td>
-        <td class="InputForCount"><input type="number" min="1" value="1" class="form-control input-sm   w-100"></td>
-        <td><textarea class="form-control input-sm" rows="1"></textarea></td>
-        <td class="TdLastColumTotal">0</td>
+        <td class="InputForCount"><input type="number" form="OrderForm" name="orderDetailsVMs[].count" min="1" value="1" class="form-control input-sm   w-100"></td>
+        <td><textarea form="OrderForm" name="orderDetailsVMs[].notes" class="form-control input-sm"  rows="1"></textarea></td>
+        <td class="TdLastColumTotal">
+        <input form="OrderForm" type="number" class="form-control" style="border:0" name="orderDetailsVMs[].totalPrice" value="0" readonly>
+        </td>
     </tr>
-}
+

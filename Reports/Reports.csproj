@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="DevExpressReports\OrderReport.repx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="DevExpressReports\OrderReport.repx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Reporting.Core" Version="20.1.3" />
+    <PackageReference Include="DevExpress.Xpo" Version="20.1.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DAL\DAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="DevExpressReports\OrderReport.cs">
+      <DependentUpon>OrderReport.repx</DependentUpon>
+    </Compile>
+    <Compile Update="DevExpressReports\OrderReport.Designer.cs">
+      <DependentUpon>OrderReport.repx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+</Project>

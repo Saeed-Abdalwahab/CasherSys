@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Statics;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -14,8 +15,10 @@ namespace DAL
         public DateTime Date { get; set; }
         public double TotalCoast { get; set; }
         public double? Discount { get; set; }
-        public int OrderNumber { get; set; }
-
+        public Int64 ordersnumberForever { get; set; }
+        public int OrderNumberForShift { get; set; }
+        public bool OrderStatus { get; set; }
+        public ShiftStatus shiftStatus { get; set; }
         public virtual IEnumerable<OrderDetails> OrderDetails { get; set; }
 
     }

@@ -1,8 +1,22 @@
-﻿<style>
+﻿@model DAL.ViewModels.OrderVM
+<style>
     td,th{
-        text-align:center;
+        /*text-align:center;*/
     }
 </style>
+    <form class="forms-sample" id="OrderForm" vaild="true">
+    </form>
+<div class="note note-info">
+    <h3>
+        رقم الاوردر :
+            <span>
+                @Model.OrderNumber
+            </span>
+        
+    </h3>
+     
+    
+</div>
 <div class="col-md-3">
     <div class="portlet light">
         <div class="portlet-title">
@@ -58,7 +72,7 @@
                             <th>السعر</th>
                             <th style="width:10%">العدد</th>
                             <th>ملاحظات</th>
-                            <th>التكلفه(جنيه)</th>
+                            <th style="width:17%">التكلفه(جنيه)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -76,11 +90,18 @@
 
                             </th>
                             <th class="TotalCostFooter">
+                                <input readonly type="number" class="form-control" style="border:0" name="TotalCoast" form="OrderForm" />
                             </th>
                         </tr>
                     </tfoot>
                 </table>
             </div>
+        </div>
+        <div class="portlet-input" style="text-align:end">
+            <button onclick="SaveOrder()" class="btn btn-lg green">
+                اضافه الاوردر
+                <i class="fa fa-plus"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -90,45 +111,86 @@
     <script src="~/assets/global/plugins/jstree/dist/jstree.min.js" type="text/javascript"></script>
     <script src="~/assets/pages/scripts/ui-tree.min.js" type="text/javascript"></script>
     <script>
-        function ResetTableIndexNumber(TableID) {
-            $('#' + TableID + ' > tbody  > tr').each(function (index, tr) {
+        function SaveOrder() {
+            if ($("#OrderTableID tbody tr").length > 0) {
+                if ($("#OrderForm").attr("valid") == "false") {
+                    toastr.error("تاكد من بيانات الاوردر", "")
+                    
+                }
+                else {
+                    var dataToSent = $("#OrderForm").serialize();
 
-                tr.children[0].innerHTML = index + 1;
+                    $.ajax({
+                        url: "/order/SaveOrder",
+                        type: "Post",
+                        data: dataToSent,
+                        success: function (res) {
+
+                        }
+                    })
+                }
+                
+            }
+            else {
+                toastr.error("يجب ادخال اصناف في الاوردر", "")
+
+            }
+        }
+        function ResetTableIndexNumber(TableID) {
+            
+            $('#' + TableID + '  tbody   tr').each(function (index, tr) {
+
+                
+                $(tr).children().each(function () {
+                    var ControlElment = $(this).find("[name^='orderDetailsVMs']");
+                    if (ControlElment.attr("name") != undefined) {
+                        var newname = ControlElment.attr("name").replace("[]", "[" + index + "]");
+                        ControlElment.attr("name", newname)
+                    }
+                });
+
+                $(tr).children().first().html(index+1) ;
             });
            
             ResetAllCalculationInTable();
         }
-        function CalculateFooterTotal() {
+        //function CalculateFooterTotal() {
 
-            var TotoalCount = 0;
-            var TotalOrderCost = 0;
-            $('#OrderTableID   tbody   tr  td[class="InputForCount"]').each(function (index, input) {
+        //    var TotoalCount = 0;
+        //    var TotalOrderCost = 0;
+        //    $('#OrderTableID   tbody   tr  td input[name="count"]').each(function (index, input) {
+        //        debugger
+        //        TotoalCount += parseFloat($(this).val());
+        //        TotalOrderCost += parseFloat($(this).parent().siblings(".TdLastColumTotal input[name='totalPrice']").val());
 
-                TotoalCount += parseFloat($(this).find("input").val());
-                TotalOrderCost += parseFloat($(this).parent().children().last().text());
+        //    });
+        //    $("#OrderTableID tfoot tr th[class='TotalCountFooter']").html(TotoalCount)
+        //    $("#OrderTableID tfoot tr .TotalCostFooter input[name='TotalCoast']").val(TotalOrderCost)
 
-            });
-            $("#OrderTableID tfoot tr th[class='TotalCountFooter']").html(TotoalCount)
-            $("#OrderTableID tfoot tr th[class='TotalCostFooter']").html(TotalOrderCost)
-
-        }
+        //}
         function calculateRowTotal() {
+            var TotalInvoiceCost = 0;
+            var TotalSandwitchsCount = 0;
             $('#OrderTableID   tbody   tr').each(function (index, Row) {
-                debugger
                 var PriceForOne = parseFloat($(this).find("td[class='TdDropDownListForPrice'] select option:selected").text());
                 var Exstracost = parseFloat($(this).find("td[class='TdDropDownListForLoaf'] select option:selected").attr("pluscost"));
                 var Count = parseFloat($(this).find("td[class='InputForCount'] input").val());
-                var LastTd = $(this).find("td[class='TdLastColumTotal']");
+                var LastTd = $(this).find(".TdLastColumTotal input");
                 var TotalBeforExtraCost = PriceForOne * Count;
                 var TotalAfterExtraCost = Exstracost > 0 && !isNaN(Exstracost) ? TotalBeforExtraCost + Exstracost : TotalBeforExtraCost;
-                LastTd.text(TotalAfterExtraCost);
-
+                LastTd.val(TotalAfterExtraCost);
+                TotalInvoiceCost += TotalAfterExtraCost;
+                TotalSandwitchsCount += Count;
+                $(this).find("td")
             });
+            $("#OrderTableID tfoot tr .TotalCountFooter ").html(TotalSandwitchsCount)
+            $("#OrderTableID tfoot tr .TotalCostFooter input[name='TotalCoast']").val(TotalInvoiceCost)
+
         }
 
         function ResetAllCalculationInTable() {
             calculateRowTotal();
-            CalculateFooterTotal();
+            //CalculateFooterTotal();
         }
         $(document).ready(function () {
          
@@ -138,24 +200,28 @@
             $(document).on("change", ".TdDropDownListForPrice select", function () {
                 ResetAllCalculationInTable();
             });
-            $(document).on("keyup", ".InputForCount input", function () {
-                debugger
-                var This = $(this);
-                if (parseFloat(This.val()) % 1 === 0) {
-                    This.parent().removeClass("has-error");
-                    ResetAllCalculationInTable();
-                }
-                else {
-                    toastr.error("عدد الساندوتش يجب ان يكون رقم صحيح", "")
+            //$(document).on("keyup", ".InputForCount input", function () {
+                
+            //    var This = $(this);
+            //    if (parseFloat(This.val()) % 1 === 0) {
+            //        $("#OrderForm").attr("valid", true)
 
-                    This.parent().addClass("has-error");
-                }
+            //        This.parent().removeClass("has-error");
+            //        ResetAllCalculationInTable();
+            //    }
+            //    else {
+            //        toastr.error("عدد الساندوتش يجب ان يكون رقم صحيح", "")
+            //        $("#OrderForm").attr("valid", false)
 
-            });
+            //        This.parent().addClass("has-error");
+            //    }
+
+            //});
             $(document).on("change", ".InputForCount input", function () {
                 debugger
                 var This = $(this);
                 if (parseFloat(This.val()) % 1 === 0) {
+                    $("#OrderForm").attr("valid", true)
 
                     This.parent().removeClass("has-error");
                     ResetAllCalculationInTable();
@@ -163,6 +229,7 @@
                 else {
                     toastr.error("عدد الساندوتش يجب ان يكون رقم صحيح", "")
                     This.parent().addClass("has-error");
+                    $("#OrderForm").attr("valid", false)
                 }
 
             });
@@ -189,49 +256,49 @@
                         ResetTableIndexNumber("OrderTableID")
                     }
                     // have children
-                    else {
-                        $.each(data.node.children, function (index, Elment) {
-                            $("#OrderTableID tbody tr[id='" + Elment + "']").remove();
-                            ResetTableIndexNumber("OrderTableID")
-                        })
-                    }
+                    //else {
+                    //    //$.each(data.node.children, function (index, Elment) {
+                    //    //    $("#OrderTableID tbody tr[id='" + Elment + "']").remove();
+                    //    //    ResetTableIndexNumber("OrderTableID")
+                    //    //});
+                    //}
                 }
                 else {
                     //No children
                     if (data.node.children.length == 0) {
                         $.ajax({
-                            url: "/Order/ItemDetailsRow?ids=" + NodeID,
+                            url: "/Order/ItemDetailsRow?id=" + NodeID,
                             type: "post",
                             success: function (res) {
 
                                 $("#OrderTableID tbody").append(res);
                                 ResetTableIndexNumber("OrderTableID")
                             }
-                        })
+                        });
                     }
                     // have children
-                    else {
-                        $.each(data.node.children, function (index, Elment) {
-                            $("#OrderTableID tbody tr[id='" + Elment + "']").remove();
+                    //else {
+                        //$.each(data.node.children, function (index, Elment) {
+                        //    $("#OrderTableID tbody tr[id='" + Elment + "']").remove();
 
-                        })
-                        var DatatoSent = { ids: data.node.children };
-                        $.ajax({
-                            //contentType: "application/json",
-                            //dataType: 'html',
+                        //})
+                        //var DatatoSent = { ids: data.node.children };
+                        //$.ajax({
+                        //    //contentType: "application/json",
+                        //    //dataType: 'html',
 
-                            type: 'POST',
-                            url: "/Order/ItemDetailsRow",
+                        //    type: 'POST',
+                        //    url: "/Order/ItemDetailsRow",
 
-                            data: DatatoSent,
-                            traditional: true,
-                            success: function (res) {
+                        //    data: DatatoSent,
+                        //    traditional: true,
+                        //    success: function (res) {
 
-                                $("#OrderTableID tbody").append(res);
-                                ResetTableIndexNumber("OrderTableID")
-                            }
-                        })
-                    }
+                        //        $("#OrderTableID tbody").append(res);
+                        //        ResetTableIndexNumber("OrderTableID")
+                        //    }
+                        //})
+                    //}
                 }
 
 

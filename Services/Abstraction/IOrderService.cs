@@ -10,6 +10,7 @@ namespace Services.Abstraction
     public interface IOrderService
     {
         OrderVM GetOrderCreate();
+        bool SaveOrderInDb(OrderVM orderVM);
        IEnumerable< ItemCategoryVM> GetAllItemCategories(IRepository<itemCategory> repository );
 
     }
