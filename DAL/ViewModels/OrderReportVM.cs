@@ -10,6 +10,7 @@ namespace DAL.ViewModels
         public string Time { get; set; }
         public string CasherName { get; set; }
         public string OrderNumber { get; set; }
-        public Order Order { get; set; }
+        public double InvoiceCoast { get; set; }
+        public List<orderDetailsVM> orderDetailsVMs { get; set; }
     }
 }

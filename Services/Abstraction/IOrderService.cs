@@ -12,6 +12,6 @@ namespace Services.Abstraction
         OrderVM GetOrderCreate();
         bool SaveOrderInDb(OrderVM orderVM);
        IEnumerable< ItemCategoryVM> GetAllItemCategories(IRepository<itemCategory> repository );
-
+        Order GetOrder(int OrderID);
     }
 }

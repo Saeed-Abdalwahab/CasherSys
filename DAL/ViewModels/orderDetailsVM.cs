@@ -14,9 +14,12 @@ namespace DAL.ViewModels
         public double totalPrice { get; set; }
 
         public string notes { get; set; }
+        public string LoafTypeName { get; set; }
+        public string ItemName { get; set; }
     
         public int? OrderID { get; set; }
-       
+        
         public int? LoafTypeID { get; set; }
+        public string ItemPrice { get; set; }
     }
 }

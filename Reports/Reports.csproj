@@ -6,10 +6,14 @@
 
   <ItemGroup>
     <None Remove="DevExpressReports\OrderReport.repx" />
+    <None Remove="DevExpressReports\Order\OrderReport.repx" />
+    <None Remove="DevExpressReports\Report1.repx" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="DevExpressReports\OrderReport.repx" />
+    <EmbeddedResource Include="DevExpressReports\Order\OrderReport.repx" />
+    <EmbeddedResource Include="DevExpressReports\Report1.repx" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +31,18 @@
     </Compile>
     <Compile Update="DevExpressReports\OrderReport.Designer.cs">
       <DependentUpon>OrderReport.repx</DependentUpon>
+    </Compile>
+    <Compile Update="DevExpressReports\Order\OrderReport.cs">
+      <DependentUpon>OrderReport.repx</DependentUpon>
+    </Compile>
+    <Compile Update="DevExpressReports\Order\OrderReport.Designer.cs">
+      <DependentUpon>OrderReport.repx</DependentUpon>
+    </Compile>
+    <Compile Update="DevExpressReports\Report1.cs">
+      <DependentUpon>Report1.repx</DependentUpon>
+    </Compile>
+    <Compile Update="DevExpressReports\Report1.Designer.cs">
+      <DependentUpon>Report1.repx</DependentUpon>
     </Compile>
   </ItemGroup>
 

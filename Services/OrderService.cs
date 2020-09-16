@@ -33,7 +33,7 @@ namespace Services
             
 
                 creatOrderVM.OrderNumber = lastOrder != null && DateTime.Now.Subtract(lastOrder.Date).Days == 0 ? //Check If No Data In Order And If The last order From More Than 1 Day
-           (TimeSpan.Compare(TimeNow, ShiftDayTime) > 0 && lastOrder.OrderNumberForShift > 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
+           (TimeSpan.Compare(ShiftDayTime,TimeNow ) > 0 && lastOrder.OrderNumberForShift >= 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
            : 1;
 
 
@@ -65,7 +65,7 @@ namespace Services
 
 
             order.OrderNumberForShift = lastOrder != null && DateTime.Now.Subtract(lastOrder.Date).Days == 0 ? //Check If No Data In Order And If The last order From More Than 1 Day
-           (TimeSpan.Compare(TimeNow, ShiftDayTime) > 0 && lastOrder.OrderNumberForShift > 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
+           (TimeSpan.Compare(ShiftDayTime, TimeNow) > 0 && lastOrder.OrderNumberForShift >= 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
            : 1;
             order.TotalCoast = orderVM.TotalCoast;
 
@@ -99,5 +99,9 @@ namespace Services
             return false;
         }
 
+        public Order GetOrder(int OrderID)
+        {
+            return repository.Get(OrderID);
+        }
     }
 }
