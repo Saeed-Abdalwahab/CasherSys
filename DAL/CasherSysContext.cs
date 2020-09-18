@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace DAL
 {
-  public  class CasherSysContext : DbContext
+  public  class CasherSysContext : IdentityDbContext
     {
         public CasherSysContext(DbContextOptions<CasherSysContext> options):base(options)
         {
