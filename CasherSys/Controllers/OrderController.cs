@@ -85,9 +85,9 @@ namespace CasherSys.Controllers
             XtraReport report = new OrderReport();
             
             report.DataSource = new List<OrderReportVM>() { orderReportVM };
-            report.RollPaper = true;
             //report.ReportUnit = ReportUnit.HundredthsOfAnInch;
-            report.PageWidth = 500;
+            //report.pap = 945;
+            report.RollPaper = true;
             var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\");
 
             report.ExportToPdf(path+ report.Name+"_"+Order.OrderNumberForShift+ ".pdf");
