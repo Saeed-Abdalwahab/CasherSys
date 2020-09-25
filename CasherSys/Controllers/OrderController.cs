@@ -28,15 +28,16 @@ namespace CasherSys.Controllers
         public OrderController(IOrderService service, IitemCategoryService ItemCategoryService,IRepository<Item> ItemRepo,IRepository<LoafType> loaftypeRepo)
         {
             this.service = service;
-
             this.ItemCategoryService = ItemCategoryService;
             itemRepo = ItemRepo;
             this.loaftypeRepo = loaftypeRepo;
         }
-       
-        public IActionResult Index()
+        public IActionResult index()
         {
-
+            return View();
+        }
+        public IActionResult MakeOrder()
+        {
             return View(service.GetOrderCreate());
         }
         public IActionResult GetItemsTree()
@@ -57,14 +58,18 @@ namespace CasherSys.Controllers
         public IActionResult SaveOrder(OrderVM orderVM)
         {
           var s=  service.SaveOrderInDb(orderVM);
-            return null;
+            return Ok();
         }
-        [HttpGet]
-        public void PrintOrderReport(int OrderID)
+
+        public IActionResult PrintOrder(int OrderID)
+        {
+            PrintOrderReport(OrderID);
+            return Ok();
+        }
+        private void PrintOrderReport(int OrderID)
         {
             List<OrderReportVM> list = new List<OrderReportVM>();
             OrderReportVM orderReportVM = new OrderReportVM();
-
             var Order = service.GetOrder(OrderID);
             orderReportVM.orderDetailsVMs = Order.OrderDetails.Select(x=>new orderDetailsVM { 
              count=x.count,
@@ -74,27 +79,44 @@ namespace CasherSys.Controllers
              totalPrice=x.totalPrice,
              ItemPrice=x.ItemDetails.Price.ToString()
             }).ToList();
-
-
             orderReportVM.OrderNumber = Order.OrderNumberForShift.ToString();
             orderReportVM.Date = Order.Date.ToString("dd/MM/yyyy");
-
             orderReportVM.Time = Order.Date.ToShortTimeString();
             orderReportVM.CasherName = "Mohanad";
             orderReportVM.InvoiceCoast = Order.TotalCoast;
             XtraReport report = new OrderReport();
-            
             report.DataSource = new List<OrderReportVM>() { orderReportVM };
-            //report.ReportUnit = ReportUnit.HundredthsOfAnInch;
-            //report.pap = 945;
             report.RollPaper = true;
             var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\");
-
-            report.ExportToPdf(path+ report.Name+"_"+Order.OrderNumberForShift+ ".pdf");
-
+            report.ExportToPdf(path +  Order.OrderNumberForShift + ".pdf");
             report.CreateDocument();
+            try { 
             PrintToolBase tool = new PrintToolBase(report.PrintingSystem);
             tool.Print();
+            }
+            catch
+            {
+
+            }
+        }
+
+        public IActionResult ToDayOrders()
+        {
+            var Data = service.AllOrders().Where(x=>x.Date.Date==DateTime.Now.Date).ToList().Select(x => new
+            {
+                ID = x.ID,
+                Date = x.Date.ToString("yyyy/MM/dd"),
+                Time=x.Date.ToString("HH:mm"),
+                TotalCost = x.TotalCoast,
+                OrderNumber = x.OrderNumberForShift,
+            }).ToList();
+            return Ok(new { data= Data });
+        }
+        public FileResult ShowPDF(int orderNumber)
+        {
+            var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\") + orderNumber + ".pdf";
+            var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read);
+            return File(fileStream, "application/pdf");
         }
     }
 }

@@ -103,5 +103,10 @@ namespace Services
         {
             return repository.Get(OrderID);
         }
+
+        public IEnumerable<Order> AllOrders()
+        {
+            return repository.GetAll();
+        } 
     }
 }

@@ -51,7 +51,7 @@
                 </Item4>
                 <Item5 Ref="23" ControlType="XRTableCell" Name="tableCell9" Weight="1.5163814439867351" Multiline="true" Text="tableCell9">
                   <ExpressionBindings>
-                    <Item1 Ref="24" EventName="BeforePrint" PropertyName="Text" Expression="[totalPrice]" />
+                    <Item1 Ref="24" EventName="BeforePrint" PropertyName="Text" Expression="[ItemPrice]" />
                   </ExpressionBindings>
                 </Item5>
                 <Item6 Ref="25" ControlType="XRTableCell" Name="tableCell10" Weight="1.3388883502304116" Multiline="true" Text="tableCell10">
