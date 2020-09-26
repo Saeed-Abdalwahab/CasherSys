@@ -26,21 +26,29 @@ namespace Services
         public OrderVM GetOrderCreate()
         {
             OrderVM creatOrderVM = new OrderVM();
-          
-            var lastOrder = repository.GetAll().LastOrDefault();
             var ShiftDayTime = TimeSpan.Parse("03:59:59", System.Globalization.CultureInfo.CurrentCulture);
-            var TimeNow = TimeSpan.Parse(DateTime.Now.ToString("HH:mm:ss"), System.Globalization.CultureInfo.CurrentCulture);
-            
 
-                creatOrderVM.OrderNumber = lastOrder != null && DateTime.Now.Subtract(lastOrder.Date).Days == 0 ? //Check If No Data In Order And If The last order From More Than 1 Day
-           (TimeSpan.Compare(ShiftDayTime,TimeNow ) > 0 && lastOrder.OrderNumberForShift >= 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
-           : 1;
+            var lastOrder = repository.GetAll().LastOrDefault();
+            var FirstOrderOfDay = repository.Find(x => x.OrderNumberForShift == 1).LastOrDefault();
+
+            creatOrderVM.OrderNumber =
+                FirstOrderOfDay == null || DateTime.Compare(DateTime.Now, (FirstOrderOfDay.Date.Date + ShiftDayTime).AddHours(24)) > 0 ? 
+                1 : lastOrder.OrderNumberForShift + 1;
+                
 
 
+
+
+
+           // var TimeNow = TimeSpan.Parse(DateTime.Now.ToString("HH:mm:ss"), System.Globalization.CultureInfo.CurrentCulture);
+           //     creatOrderVM.OrderNumber = lastOrder != null && DateTime.Now.Subtract(lastOrder.Date).Days == 0 ? //Check If No Data In Order And If The last order From More Than 1 Day
+           //(TimeSpan.Compare(ShiftDayTime,TimeNow ) > 0 && lastOrder.OrderNumberForShift >= 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
+           //: 1;
+
+       
             creatOrderVM.Date = DateTime.Now;
             return creatOrderVM;
         }
-
         public IEnumerable<ItemCategoryVM> GetAllItemCategories(IRepository<itemCategory> repository)
         {
             return repository.GetAll().Select(x => new ItemCategoryVM
@@ -49,7 +57,6 @@ namespace Services
                 Name = x.Name
             });
         }
-
         public bool SaveOrderInDb(OrderVM orderVM)
         {
             Order order = new Order();
@@ -60,13 +67,8 @@ namespace Services
             var lastOrder = repository.GetAll().LastOrDefault();
 
             order.ordersnumberForever = repository.GetAll().Count() + 1;
-            var ShiftDayTime = TimeSpan.Parse("03:59:59", System.Globalization.CultureInfo.CurrentCulture);
-            var TimeNow = TimeSpan.Parse(DateTime.Now.ToString("HH:mm:ss"), System.Globalization.CultureInfo.CurrentCulture);
-
-
-            order.OrderNumberForShift = lastOrder != null && DateTime.Now.Subtract(lastOrder.Date).Days == 0 ? //Check If No Data In Order And If The last order From More Than 1 Day
-           (TimeSpan.Compare(ShiftDayTime, TimeNow) > 0 && lastOrder.OrderNumberForShift >= 1 ? 1 : lastOrder.OrderNumberForShift + 1) // Check If The Time Now More Than 3.59 AM
-           : 1;
+            order.ExtraCost = orderVM.ExtraCost;
+            order.OrderNumberForShift = orderVM.OrderNumber;
             order.TotalCoast = orderVM.TotalCoast;
 
 
@@ -103,10 +105,12 @@ namespace Services
         {
             return repository.Get(OrderID);
         }
-
         public IEnumerable<Order> AllOrders()
         {
             return repository.GetAll();
         } 
+
+
+
     }
 }

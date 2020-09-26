@@ -14,6 +14,7 @@ namespace DAL
         public int ID { get; set; }
         public DateTime Date { get; set; }
         public double TotalCoast { get; set; }
+        public double ExtraCost { get; set; }
         public double? Discount { get; set; }
         public Int64 ordersnumberForever { get; set; }
         public int OrderNumberForShift { get; set; }

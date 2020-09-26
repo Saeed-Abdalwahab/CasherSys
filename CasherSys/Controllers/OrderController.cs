@@ -87,9 +87,9 @@ namespace CasherSys.Controllers
             XtraReport report = new OrderReport();
             report.DataSource = new List<OrderReportVM>() { orderReportVM };
             report.RollPaper = true;
-            var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\");
-            report.ExportToPdf(path +  Order.OrderNumberForShift + ".pdf");
-            report.CreateDocument();
+            //var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\");
+            //report.ExportToPdf(path +  Order.OrderNumberForShift + ".pdf");
+            //report.CreateDocument();
             try { 
             PrintToolBase tool = new PrintToolBase(report.PrintingSystem);
             tool.Print();
@@ -112,11 +112,40 @@ namespace CasherSys.Controllers
             }).ToList();
             return Ok(new { data= Data });
         }
-        public FileResult ShowPDF(int orderNumber)
+        public PartialViewResult GetReport(int OrderID)
         {
-            var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\") + orderNumber + ".pdf";
-            var fileStream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read);
-            return File(fileStream, "application/pdf");
+            List<OrderReportVM> list = new List<OrderReportVM>();
+            OrderReportVM orderReportVM = new OrderReportVM();
+            var Order = service.GetOrder(OrderID);
+            orderReportVM.orderDetailsVMs = Order.OrderDetails.Select(x => new orderDetailsVM
+            {
+                count = x.count,
+                LoafTypeName = x.LoafType.Name,
+                notes = x.notes,
+                ItemName = x.ItemDetails.Item.Name,
+                totalPrice = x.totalPrice,
+                ItemPrice = x.ItemDetails.Price.ToString()
+            }).ToList();
+            orderReportVM.OrderNumber = Order.OrderNumberForShift.ToString();
+            orderReportVM.Date = Order.Date.ToString("dd/MM/yyyy");
+            orderReportVM.Time = Order.Date.ToShortTimeString();
+            orderReportVM.CasherName = "Mohanad";
+            orderReportVM.InvoiceCoast = Order.TotalCoast;
+            XtraReport report = new OrderReport();
+            report.DataSource = new List<OrderReportVM>() { orderReportVM };
+            report.RollPaper = true;
+
+            report.CreateDocument();
+            try
+            {
+                PrintToolBase tool = new PrintToolBase(report.PrintingSystem);
+                tool.Print();
+            }
+            catch
+            {
+
+            }
+            return PartialView(report);
         }
     }
 }

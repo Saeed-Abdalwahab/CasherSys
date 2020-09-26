@@ -24,7 +24,9 @@ namespace DAL.ViewModels
         public double? Discount { get; set; }
         [Display(Name ="رقم الطلب")]
         [Required(ErrorMessage ="*")]
-        public Int64 OrderNumber { get; set; }
+        public int OrderNumber { get; set; }
+        public double ExtraCost { get; set; }
+
         public List<orderDetailsVM> orderDetailsVMs { get; set; }
     }
 }

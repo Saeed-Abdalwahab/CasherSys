@@ -5,6 +5,7 @@
     }
 </style>
     <form class="forms-sample" id="OrderForm" vaild="true">
+        @Html.HiddenFor(x=>x.OrderNumber)
     </form>
 <div class="note note-info">
     <h3>
@@ -14,8 +15,6 @@
             </span>
         
     </h3>
-     
-    
 </div>
 <div class="col-md-3">
     <div class="portlet light">
@@ -126,7 +125,6 @@
                         data: dataToSent,
                         success: function (res) {
                             toastr.success("تم حفظ الاوردر", "")
-
                             window.location.href = "/order/index";
 
                         }

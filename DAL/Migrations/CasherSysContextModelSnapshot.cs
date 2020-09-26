@@ -96,6 +96,9 @@ namespace DAL.Migrations
                     b.Property<double?>("Discount")
                         .HasColumnType("float");
 
+                    b.Property<double>("ExtraCost")
+                        .HasColumnType("float");
+
                     b.Property<int>("OrderNumberForShift")
                         .HasColumnType("int");
 
