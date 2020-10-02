@@ -8,6 +8,7 @@ using DAL;
 using DAL.ViewModels;
 using DevExpress.XtraPrinting;
 using DevExpress.XtraReports.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Reports.DevExpressReports.Order;
@@ -17,15 +18,17 @@ using Statics;
 
 namespace CasherSys.Controllers
 {
+ 
+    [Authorize]
     public class OrderController : Controller
     {
         private readonly IOrderService service;
-
         private readonly IitemCategoryService ItemCategoryService;
         private readonly IRepository<Item> itemRepo;
         private readonly IRepository<LoafType> loaftypeRepo;
 
-        public OrderController(IOrderService service, IitemCategoryService ItemCategoryService,IRepository<Item> ItemRepo,IRepository<LoafType> loaftypeRepo)
+        public OrderController(IOrderService service, IitemCategoryService ItemCategoryService,IRepository<Item> ItemRepo,
+                              IRepository<LoafType> loaftypeRepo)
         {
             this.service = service;
             this.ItemCategoryService = ItemCategoryService;
@@ -68,24 +71,9 @@ namespace CasherSys.Controllers
         }
         private void PrintOrderReport(int OrderID)
         {
-            List<OrderReportVM> list = new List<OrderReportVM>();
-            OrderReportVM orderReportVM = new OrderReportVM();
-            var Order = service.GetOrder(OrderID);
-            orderReportVM.orderDetailsVMs = Order.OrderDetails.Select(x=>new orderDetailsVM { 
-             count=x.count,
-             LoafTypeName=x.LoafType.Name,
-             notes=x.notes,
-             ItemName=x.ItemDetails.Item.Name,
-             totalPrice=x.totalPrice,
-             ItemPrice=x.ItemDetails.Price.ToString()
-            }).ToList();
-            orderReportVM.OrderNumber = Order.OrderNumberForShift.ToString();
-            orderReportVM.Date = Order.Date.ToString("dd/MM/yyyy");
-            orderReportVM.Time = Order.Date.ToShortTimeString();
-            orderReportVM.CasherName = "Mohanad";
-            orderReportVM.InvoiceCoast = Order.TotalCoast;
+           
             XtraReport report = new OrderReport();
-            report.DataSource = new List<OrderReportVM>() { orderReportVM };
+            report.DataSource = service.OrderReportSource(OrderID);
             report.RollPaper = true;
             //var path = System.IO.Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\ReportsPDf\");
             //report.ExportToPdf(path +  Order.OrderNumberForShift + ".pdf");
@@ -102,7 +90,8 @@ namespace CasherSys.Controllers
 
         public IActionResult ToDayOrders()
         {
-            var Data = service.AllOrders().Where(x=>x.Date.Date==DateTime.Now.Date).ToList().Select(x => new
+        
+            var Data = service.AllToDayOrders().Select(x => new
             {
                 ID = x.ID,
                 Date = x.Date.ToString("yyyy/MM/dd"),
@@ -114,26 +103,10 @@ namespace CasherSys.Controllers
         }
         public PartialViewResult GetReport(int OrderID)
         {
-            List<OrderReportVM> list = new List<OrderReportVM>();
-            OrderReportVM orderReportVM = new OrderReportVM();
-            var Order = service.GetOrder(OrderID);
-            orderReportVM.orderDetailsVMs = Order.OrderDetails.Select(x => new orderDetailsVM
-            {
-                count = x.count,
-                LoafTypeName = x.LoafType.Name,
-                notes = x.notes,
-                ItemName = x.ItemDetails.Item.Name,
-                totalPrice = x.totalPrice,
-                ItemPrice = x.ItemDetails.Price.ToString()
-            }).ToList();
-            orderReportVM.OrderNumber = Order.OrderNumberForShift.ToString();
-            orderReportVM.Date = Order.Date.ToString("dd/MM/yyyy");
-            orderReportVM.Time = Order.Date.ToShortTimeString();
-            orderReportVM.CasherName = "Mohanad";
-            orderReportVM.InvoiceCoast = Order.TotalCoast;
             XtraReport report = new OrderReport();
-            report.DataSource = new List<OrderReportVM>() { orderReportVM };
+            report.DataSource = service.OrderReportSource(OrderID);
             report.RollPaper = true;
+            
 
             report.CreateDocument();
             try

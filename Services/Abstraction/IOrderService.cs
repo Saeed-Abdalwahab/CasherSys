@@ -13,6 +13,7 @@ namespace Services.Abstraction
         bool SaveOrderInDb(OrderVM orderVM);
        IEnumerable< ItemCategoryVM> GetAllItemCategories(IRepository<itemCategory> repository );
         Order GetOrder(int OrderID);
-        IEnumerable<Order> AllOrders();
+        IEnumerable<Order> AllToDayOrders();
+        List<OrderReportVM> OrderReportSource(int OrderID);
     }
 }

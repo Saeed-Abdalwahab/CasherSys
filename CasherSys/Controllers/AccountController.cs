@@ -34,7 +34,9 @@ namespace CasherSys.Controllers
              var result=await   userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                  await  signInManager.SignInAsync(user,isPersistent: false);
+                    await signInManager.SignOutAsync();
+
+                    await signInManager.SignInAsync(user,isPersistent: false);
                     RedirectToAction("index", "home");
                 }
                 foreach (var error in result.Errors)
@@ -58,15 +60,15 @@ namespace CasherSys.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Login(LoginVM Model)
+        public async Task<IActionResult> Login(LoginVM Model,string returnUrl)
         {
             if (ModelState.IsValid)
             {
                var result= await signInManager.PasswordSignInAsync(Model.UserName, Model.Password, Model.RememberMe, false);
                 if (result.Succeeded)
                 {
-
-                   return RedirectToAction("index", "home");
+                    if (!string.IsNullOrEmpty(returnUrl) &&Url.IsLocalUrl(returnUrl)) return LocalRedirect(returnUrl);
+                    else return RedirectToAction("index", "home");
                 }
                 
                     ModelState.AddModelError("", "Invalid Login ");

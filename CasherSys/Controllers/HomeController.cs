@@ -9,9 +9,11 @@ using CasherSys.Models;
 using Repos.Abstraction;
 using DAL;
 using Services.Abstraction;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CasherSys.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

@@ -52,6 +52,7 @@ namespace CasherSys
             services.AddScoped<IitemCategoryService, ItemCategoryService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IItemService, ItemService>();
+            services.AddScoped<IDailyExpensesService, DailyExpensesService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

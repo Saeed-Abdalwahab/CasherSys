@@ -4,9 +4,7 @@
         /*text-align:center;*/
     }
 </style>
-    <form class="forms-sample" id="OrderForm" vaild="true">
-        @Html.HiddenFor(x=>x.OrderNumber)
-    </form>
+
 <div class="note note-info">
     <h3>
         رقم الاوردر :
@@ -16,6 +14,29 @@
         
     </h3>
 </div>
+<form class="forms-sample"  id="OrderForm" valid="true">
+    @Html.HiddenFor(x => x.OrderNumber)
+    @Html.HiddenFor(x=>x.Date)
+    <div class="form-group col-md-12">
+        <div class="col-md-6 ">
+            <label class="control-label col-md-2">اضافات</label>
+            <div class=" col-md-10">
+                <div class="input-group ">
+                    <input type="number"  asp-for="ExtraCost" placeholder="اضافات" class="form-control ">
+                    <span class="input-group-btn">
+                        <span class="btn">جنية</span>
+                    </span>
+                </div>
+                <div class="">
+                    <span class="text-danger" asp-validation-for="ExtraCost">
+                    </span>
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
+</form>
 <div class="col-md-3">
     <div class="portlet light">
         <div class="portlet-title">
@@ -112,7 +133,8 @@
     <script>
         function SaveOrder() {
             if ($("#OrderTableID tbody tr").length > 0) {
-                if ($("#OrderForm").attr("valid") == "false") {
+                debugger
+                if ($("#OrderForm").attr("valid") == "false" || $("#ExtraCost").valid()===false) {
                     toastr.error("تاكد من بيانات الاوردر", "")
                     
                 }
@@ -184,8 +206,10 @@
                 TotalSandwitchsCount += Count;
                 $(this).find("td")
             });
+
             $("#OrderTableID tfoot tr .TotalCountFooter ").html(TotalSandwitchsCount)
-            $("#OrderTableID tfoot tr .TotalCostFooter input[name='TotalCoast']").val(TotalInvoiceCost)
+            var ExtraCost = $("#ExtraCost").val() > 0 ? $("#ExtraCost").val():0;
+            $("#OrderTableID tfoot tr .TotalCostFooter input[name='TotalCoast']").val(TotalInvoiceCost + parseFloat(ExtraCost))
 
         }
 
@@ -305,6 +329,9 @@
 
 
 
+            });
+            $("#ExtraCost").change(function () {
+                calculateRowTotal();
             });
 
         })

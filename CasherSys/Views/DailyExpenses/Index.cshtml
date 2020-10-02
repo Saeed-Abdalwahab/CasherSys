@@ -1,0 +1,109 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="col-md-12">
+    <!-- BEGIN EXAMPLE TABLE PORTLET-->
+    <div class="portlet light bordered">
+        <div class="portlet-title">
+            <div class="caption font-dark">
+                <i class="icon-settings font-dark"></i>
+                <span class="caption-subject bold uppercase">Orders</span>
+            </div>
+            <div class="tools"> </div>
+        </div>
+        <div class="portlet-body">
+            <table id="DailyExpensesTable" class="display" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>المصروف</th>
+                   
+                        <th>اليوم</th>
+                        <th>الوقت</th>
+                        <th>القيمة</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- END EXAMPLE TABLE PORTLET-->
+</div>
+
+@section Scripts
+{
+    <script src="~/js/thirdparty.bundle.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/viewer.part.bundle.js"></script>
+    <!-- BEGIN PAGE LEVEL PLUGINS -->
+    <script src="~/assets/global/scripts/datatable.js" type="text/javascript"></script>
+    <script src="~/assets/global/plugins/datatables/datatables.min.js" type="text/javascript"></script>
+    <script src="~/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap.js" type="text/javascript"></script>
+    <!-- END PAGE LEVEL PLUGINS -->
+    <!-- BEGIN PAGE LEVEL SCRIPTS -->
+    <script src="~/assets/pages/scripts/table-datatables-rowreorder.min.js" type="text/javascript"></script>
+    <!-- END PAGE LEVEL SCRIPTS -->
+    <script>
+        
+    </script>
+    <script>
+        $(document).ready(function () {
+            var Table = $("#OrdersTable").DataTable({
+                "ajax": {
+                    "url": "/DailyExpenses/GetData",
+                    "datatype": "json",
+                    "type": "get"
+                },
+                "columnDefs": [{
+                    "targets": [0, 4],
+                    "visible": true,
+                    "searchable": false,
+                    //"orderable": false
+                }],
+                "columns": [
+                    {
+                        "data": "id",
+                        "autoWidth": true,
+                        "render": function (data, type, row, meta) {
+
+                            return meta.row + 1;
+                        }
+                    },
+                    {
+                        "data": "description",
+                        "autoWidth": true
+                    },
+                    //{ "data": "date", "autoWidth": true },
+                    { "data": "date", "autoWidth": true },
+                    { "data": "time", "autoWidth": true },
+                    {
+                        "data": "id", "autoWidth": true,
+                        "render": function (data, type, row) {
+                            return `<button  class="btn">
+                                                        <i class="fa fa-print"></i >
+                                                    </button>`;
+                        }
+                    },
+
+                ]
+            });
+        });
+    </script>
+}
+
+@section Styles{
+
+    <link rel="stylesheet" href="~/css/thirdparty.bundle.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/viewer.part.bundle.css" />
+
+    <link href="~/assets/global/plugins/datatables/datatables.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/global/plugins/datatables/plugins/bootstrap/datatables.bootstrap-rtl.css" rel="stylesheet" type="text/css" />
+
+}
+

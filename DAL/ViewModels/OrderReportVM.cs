@@ -11,6 +11,9 @@ namespace DAL.ViewModels
         public string CasherName { get; set; }
         public string OrderNumber { get; set; }
         public double InvoiceCoast { get; set; }
+        public double ExtraCost { get; set; }
+        public int SandwitchCount { get; set; }
+
         public List<orderDetailsVM> orderDetailsVMs { get; set; }
     }
 }

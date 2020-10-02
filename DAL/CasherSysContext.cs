@@ -18,5 +18,6 @@ namespace DAL
         public virtual DbSet<itemCategory> itemCategories { get; set; }
         public virtual DbSet<ItemDetails> ItemDetails { get; set; }
         public virtual DbSet<LoafType> LoafTypes { get; set; }
+        public virtual DbSet<DailyExpenses> DailyExpenses { get; set; }
     }
 }

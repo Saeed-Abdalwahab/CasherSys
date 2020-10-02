@@ -5,6 +5,7 @@ using Services.Abstraction;
 using Statics;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -60,14 +61,14 @@ namespace Services
         public bool SaveOrderInDb(OrderVM orderVM)
         {
             Order order = new Order();
-            order.Date = DateTime.Now;
+            order.Date = orderVM.Date;
 
             order.shiftStatus = 0;
 
             var lastOrder = repository.GetAll().LastOrDefault();
 
             order.ordersnumberForever = repository.GetAll().Count() + 1;
-            order.ExtraCost = orderVM.ExtraCost;
+            order.ExtraCost = orderVM.ExtraCost==null|| orderVM.ExtraCost <0 ? 0:(double)orderVM.ExtraCost;
             order.OrderNumberForShift = orderVM.OrderNumber;
             order.TotalCoast = orderVM.TotalCoast;
 
@@ -77,19 +78,30 @@ namespace Services
                 unitOfWork.CreatTransaction();
                 repository.Add(order);
                 unitOfWork.save();
-
-                foreach (var item in orderVM.orderDetailsVMs)
+           var itemDetails= orderVM.orderDetailsVMs.Select(item => new OrderDetails
                 {
-                    OrderDetails orderDetails = new OrderDetails();
-                    orderDetails.count = item.count;
-                    orderDetails.itemDetailsID = item.itemDetailsID;
-                    orderDetails.LoafTypeID = item.LoafTypeID;
-                    orderDetails.notes = item.notes;
-                    orderDetails.OrderID = order.ID;
-                    orderDetails.totalPrice = item.totalPrice;
-                    orderdetailsrepo.Add(orderDetails);
-                    unitOfWork.save();
-                }
+                    count = item.count,
+                    itemDetailsID = item.itemDetailsID,
+                    LoafTypeID = item.LoafTypeID,
+                    notes = item.notes,
+                    OrderID = order.ID,
+                    totalPrice = item.totalPrice,
+                }).ToList();
+                orderdetailsrepo.AddRange(itemDetails);
+                unitOfWork.save();
+
+                //foreach (var item in orderVM.orderDetailsVMs)
+                //{
+                //    OrderDetails orderDetails = new OrderDetails();
+                //    orderDetails.count = item.count;
+                //    orderDetails.itemDetailsID = item.itemDetailsID;
+                //    orderDetails.LoafTypeID = item.LoafTypeID;
+                //    orderDetails.notes = item.notes;
+                //    orderDetails.OrderID = order.ID;
+                //    orderDetails.totalPrice = item.totalPrice;
+                //    orderdetailsrepo.Add(orderDetails);
+                //    unitOfWork.save();
+                //}
 
                 unitOfWork.Commit();
             }
@@ -105,12 +117,46 @@ namespace Services
         {
             return repository.Get(OrderID);
         }
-        public IEnumerable<Order> AllOrders()
+        public IEnumerable<Order> AllToDayOrders()
         {
-            return repository.GetAll();
-        } 
+           
+            var ShiftDayTime = TimeSpan.Parse("03:59:59", System.Globalization.CultureInfo.CurrentCulture);
+            var StartShiftDateOfDay = ShiftStartDateOfDay();
+            var ss= repository.Find(x => x.Date >=StartShiftDateOfDay);
+            //return repository.Find(x=> x.Date>=(DateTime.Now.Date+ShiftDayTime));
+            return ss;
+        }
 
+        public List<OrderReportVM> OrderReportSource(int OrderID)
+        {
+            List<OrderReportVM> list = new List<OrderReportVM>();
+            OrderReportVM orderReportVM = new OrderReportVM();
+            var Order = GetOrder(OrderID);
+            orderReportVM.orderDetailsVMs = Order.OrderDetails.Select(x => new orderDetailsVM
+            {
+                count = x.count,
+                LoafTypeName = x.LoafType.Name,
+                notes = x.notes,
+                ItemName = x.ItemDetails.Item.Name,
+                totalPrice = x.totalPrice,
+                ItemPrice = x.ItemDetails.Price.ToString()
+            }).ToList();
+            orderReportVM.OrderNumber = Order.OrderNumberForShift.ToString();
+            orderReportVM.Date = Order.Date.ToString("dd/MM/yyyy");
+            orderReportVM.Time = Order.Date.ToShortTimeString();
+            orderReportVM.CasherName = "Mohanad";
+            orderReportVM.InvoiceCoast = Order.TotalCoast;
+            orderReportVM.ExtraCost = Order.ExtraCost;
+            orderReportVM.SandwitchCount = Order.OrderDetails.Sum(x => x.count);
+            list.Add(orderReportVM);
+            return list;
+        }
 
+        private DateTime ShiftStartDateOfDay()
+        {
+            var ShiftStartDate = DateTime.Now.Date+ TimeSpan.Parse("03:59:59", System.Globalization.CultureInfo.CurrentCulture);
+            return DateTime.Compare(ShiftStartDate, DateTime.Now) > 0 ? ShiftStartDate.AddDays(-1) : ShiftStartDate;
+        }
 
     }
 }

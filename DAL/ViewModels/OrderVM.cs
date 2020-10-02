@@ -25,7 +25,8 @@ namespace DAL.ViewModels
         [Display(Name ="رقم الطلب")]
         [Required(ErrorMessage ="*")]
         public int OrderNumber { get; set; }
-        public double ExtraCost { get; set; }
+        [Range(0, double.MaxValue ,ErrorMessage ="قيمة غير صحيحه")]
+        public double? ExtraCost { get; set; }
 
         public List<orderDetailsVM> orderDetailsVMs { get; set; }
     }
